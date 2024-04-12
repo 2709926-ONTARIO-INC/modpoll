@@ -1,3 +1,4 @@
+import argparse
 import logging
 from typing import Optional
 import zmq
@@ -6,10 +7,25 @@ import zmq
 logging.basicConfig(level=logging.INFO, format='%(asctime)s | %(levelname)s | %(message)s')
 log: logging.Logger = logging.getLogger(__name__)
 
-# ZeroMQ configuration
-ZMQ_HOST: str = '127.0.0.1'
-ZMQ_PORT: int = 5555
-TOPIC: bytes = b'modpoll/modsim001'
+
+def get_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description='ZeroMQ receiver')
+    parser.add_argument(
+        "--zeromq-port",
+        default=5555,
+        help="Specify ZeroMQ subscriber port. Defaults to 5555.",
+    )
+    parser.add_argument(
+        "--zeromq-topic",
+        required=True,
+        help="Specify ZeroMQ subscriber topic. Required!",
+    )
+    return parser
+
+
+args: Optional[argparse.Namespace] = get_parser().parse_args() 
+ZMQ_PORT: int = args.zeromq_port
+TOPIC: bytes = args.zeromq_topic.encode()
 
 
 def zeromq_connect() -> Optional[zmq.Socket]:
@@ -19,12 +35,12 @@ def zeromq_connect() -> Optional[zmq.Socket]:
 
         # Create ZeroMQ socket
         socket: zmq.Socket = context.socket(zmq.SUB)
-        socket.connect(f"tcp://{ZMQ_HOST}:{ZMQ_PORT}")
+        socket.connect(f"tcp://127.0.0.1:{ZMQ_PORT}")
 
         # Subscribe to all messages
         socket.subscribe(TOPIC)
 
-        log.info(f"Connected to ZeroMQ publisher at {ZMQ_HOST}:{ZMQ_PORT} for topic '{TOPIC.decode()}'")
+        log.info(f"Connected to ZeroMQ publisher at 127.0.0.1:{ZMQ_PORT} for topic '{TOPIC.decode()}'")
         return socket
 
     except zmq.error.ZMQError as ex:

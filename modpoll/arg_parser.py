@@ -164,13 +164,13 @@ def get_parser():
     parser.add_argument(
         "--zeromq",
         action="store_true",
-        help="Start ZeroMQ server on localhost. Skip ZeroMQ setup if not specified",
+        help="Start ZeroMQ publisher on localhost. Skip ZeroMQ setup if not specified",
     )
     parser.add_argument(
         "--zeromq-port",
         type=int,
         default=5555,
-        help="Specify ZeroMQ server port. Defaults to 5555.",
+        help="Specify ZeroMQ publisher port. Defaults to 5555.",
     )
     parser.add_argument(
         "--zeromq-topic-prefix",
