@@ -7,6 +7,10 @@ import zmq
 logging.basicConfig(level=logging.INFO, format='%(asctime)s | %(levelname)s | %(message)s')
 log: logging.Logger = logging.getLogger(__name__)
 
+args: Optional[argparse.Namespace] = None 
+ZMQ_PORT: int = 0
+TOPIC: bytes = b""
+
 
 def get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description='ZeroMQ receiver')
@@ -21,11 +25,6 @@ def get_parser() -> argparse.ArgumentParser:
         help="Specify ZeroMQ subscriber topic. Required!",
     )
     return parser
-
-
-args: Optional[argparse.Namespace] = get_parser().parse_args() 
-ZMQ_PORT: int = args.zeromq_port
-TOPIC: bytes = args.zeromq_topic.encode()
 
 
 def zeromq_connect() -> Optional[zmq.Socket]:
@@ -71,5 +70,12 @@ def zeromq_close(socket: zmq.Socket) -> None:
         log.error(f"ZeroMQ close error: {ex}")
 
 
-if __name__ == "__main__":
+def main() -> None:
+    global args, ZMQ_PORT, TOPIC
+    args = get_parser().parse_args() 
+    ZMQ_PORT = args.zeromq_port
+    TOPIC = args.zeromq_topic.encode()
     zeromq_receive()
+
+if __name__ == "__main__":
+    main()
