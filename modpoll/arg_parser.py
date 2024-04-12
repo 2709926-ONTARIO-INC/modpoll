@@ -162,15 +162,15 @@ def get_parser():
         help="The type of framer for modbus message. Use default framer if not specified.",
     )
     parser.add_argument(
-        "--zeromq-host",
-        default=None,
-        help="ZeroMQ server host. Defaults to '*' (all interfaces). Skip ZeroMQ setup if not specified",
+        "--zeromq",
+        action="store_true",
+        help="Start ZeroMQ server on localhost. Skip ZeroMQ setup if not specified",
     )
     parser.add_argument(
         "--zeromq-port",
         type=int,
         default=5555,
-        help="ZeroMQ server port. Defaults to 5555.",
+        help="Specify ZeroMQ server port. Defaults to 5555.",
     )
     parser.add_argument(
         "--zeromq-topic-prefix",

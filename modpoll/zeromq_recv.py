@@ -7,8 +7,10 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s | %(levelname)s | %(
 log: logging.Logger = logging.getLogger(__name__)
 
 # ZeroMQ configuration
-ZMQ_HOST: str = 'localhost'
+ZMQ_HOST: str = '127.0.0.1'
 ZMQ_PORT: int = 5555
+TOPIC: bytes = b'modpoll/modsim001'
+
 
 def zeromq_connect() -> Optional[zmq.Socket]:
     try:
@@ -20,21 +22,23 @@ def zeromq_connect() -> Optional[zmq.Socket]:
         socket.connect(f"tcp://{ZMQ_HOST}:{ZMQ_PORT}")
 
         # Subscribe to all messages
-        socket.subscribe(b"")
+        socket.subscribe(TOPIC)
 
-        log.info(f"Connected to ZeroMQ publisher at {ZMQ_HOST}:{ZMQ_PORT}")
+        log.info(f"Connected to ZeroMQ publisher at {ZMQ_HOST}:{ZMQ_PORT} for topic '{TOPIC.decode()}'")
         return socket
 
     except zmq.error.ZMQError as ex:
         log.error(f"ZeroMQ connection error: {ex}")
         return None
 
+
 def zeromq_receive() -> None:
     socket: Optional[zmq.Socket] = zeromq_connect()
     if socket:
         try:
             while True:
-                pass
+                message = socket.recv()
+                log.info(f"Received message from topic: {message}")
         except (zmq.error.ZMQError, KeyboardInterrupt) as ex:
             log.error(f"ZeroMQ receive error: {ex}")
         finally:
@@ -42,12 +46,14 @@ def zeromq_receive() -> None:
     else:
         log.error("Failed to connect to ZeroMQ publisher")
 
+
 def zeromq_close(socket: zmq.Socket) -> None:
     try:
         socket.close()
         log.info("ZeroMQ connection closed.")
     except zmq.error.ZMQError as ex:
         log.error(f"ZeroMQ close error: {ex}")
+
 
 if __name__ == "__main__":
     zeromq_receive()
