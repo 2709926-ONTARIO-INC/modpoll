@@ -17,8 +17,10 @@ from modpoll.modbus_task import (
     modbus_setup,
     modbus_write_coil,
     modbus_write_register,
+    modbus_zeromq_publish,
 )
 from modpoll.mqtt_task import mqttc_close, mqttc_receive, mqttc_setup
+from modpoll.zeromq_task import zeromq_setup, zeromq_close
 
 LOG_SIMPLE = "%(asctime)s | %(levelname).1s | %(name)s | %(message)s"
 log = None
@@ -48,6 +50,16 @@ def app(name="modpoll"):
     logging.basicConfig(level=args.loglevel, format=LOG_SIMPLE)
     global log
     log = logging.getLogger(__name__)
+
+    # setup zeromq topic
+    if args.zeromq:
+        log.info(f"Setup ZeroMQ connection to localhost") 
+        if not zeromq_setup(args):
+            log.error("Failed to setup ZeroMQ")
+            zeromq_close()
+            exit(1)
+    else:
+        log.info("No ZeroMQ host specified, skip ZeroMQ setup.")
 
     # setup mqtt
     if args.mqtt_host:
@@ -89,6 +101,11 @@ def app(name="modpoll"):
                     modbus_publish(timestamp=now)
                 else:
                     modbus_publish()
+            if args.zeromq:
+                if args.timestamp:
+                    modbus_zeromq_publish(timestamp=now)
+                else:
+                    modbus_zeromq_publish()
             if args.export:
                 if args.timestamp:
                     modbus_export(args.export, timestamp=now)
@@ -120,6 +137,7 @@ def app(name="modpoll"):
             break
     modbus_close()
     mqttc_close()
+    zeromq_close()
 
 
 if __name__ == "__main__":

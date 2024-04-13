@@ -10,8 +10,10 @@ from pymodbus.client import ModbusSerialClient, ModbusTcpClient, ModbusUdpClient
 from pymodbus.constants import Endian
 from pymodbus.exceptions import ModbusException
 from pymodbus.payload import BinaryPayloadDecoder
+from typing import Optional
 
 from modpoll.mqtt_task import mqttc_publish
+from modpoll.zeromq_task import zeromq_publish
 
 args = None
 log = None
@@ -574,6 +576,32 @@ def modbus_publish_diagnostics():
         payload = {"pollCount": dev.pollCount, "errorCount": dev.errorCount}
         topic = f"{args.mqtt_topic_prefix}diagnostics/{dev.name}"
         mqttc_publish(topic, json.dumps(payload), qos=args.mqtt_qos)
+
+
+def modbus_zeromq_publish(timestamp: Optional[float] = None, on_change: bool = False) -> None:
+    log.info(f"Entered modbus zeromq publish function")
+    for dev in deviceList:
+        if not dev.pollSuccess:
+            log.debug(f"Skip publishing for disconnected device: {dev.name}")
+            continue
+
+        log.info(f"Publishing data for device: {dev.name} ...")
+        payload = {}
+
+        for ref in dev.references.values():
+            if on_change and ref.val == ref.last_val:
+                continue
+
+            if ref.unit:
+                payload[f"{ref.name}|{ref.unit}"] = ref.val
+            else:
+                payload[f"{ref.name}"] = ref.val
+
+        if timestamp:
+            payload["timestamp_ms"] = int(timestamp * 1000)
+
+        topic = f"{args.zeromq_topic_prefix}{dev.name}"
+        zeromq_publish(topic, json.dumps(payload))
 
 
 def modbus_export(file, timestamp=None):
