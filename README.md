@@ -306,6 +306,72 @@ for example, if the child folder `examples` contains the config file `modsim.csv
 > *Refer to the [documentation](https://helloysd.gitlab.io/modpoll) site for more details about the configuration and examples.*
 
 
+## Usage of ZeroMQ
+
+Another feature of the modpoll tool is the ability to transfer data polled from the modbus device on localhost using the PUB/SUB model with ZeroMQ.
+
+### Installation
+
+To utilize this feature, you'll need to install the ZeroMQ package using `pip`:
+
+```bash
+pip install pyzmq
+```
+
+### Publish data using ZeroMQ
+
+Below are examples of how to use ZeroMQ with modpoll to publish data to a topic.
+
+```bash
+modpoll \
+  --tcp modsim.topmaker.net \
+  --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
+  --zeromq 
+```
+
+The above command enables ZeroMQ usage on the default port `5555`.
+
+```bash
+modpoll \
+  --tcp modsim.topmaker.net \
+  --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
+  --zeromq 
+  --zeromq-port 9999
+```
+
+You can specify a different port number using the `--zeromq-port` option.
+
+> The ZeroMQ topic follows the <mqtt_topic_prefix>/<deviceid> pattern. <mqtt_topic_prefix> is provided by the `--zeromq-topic-prefix` argument, with the default value being modpoll/, and <deviceid> is provided by the Modbus configuration file.
+
+```bash
+modpoll \
+  --tcp modsim.topmaker.net \
+  --config https://raw.githubusercontent.com/gavinying/modpoll/master/examples/modsim.csv
+  --zeromq 
+  --zeromq-port 9999
+  --zeromq-topic-prefix zeromq/
+```
+
+You can adjust the topic prefix using the `--zeromq-topic-prefix` option.
+
+### Receiving data using ZeroMQ
+
+To receive data by subscribing to a topic using ZeroMQ, you need to run a separate Python script provided for this purpose.
+
+You can run the receiving script as shown below:
+
+```bash
+python modpoll/zeromq_recv.py --zeromq-topic modpoll/modsim001
+```
+
+You must explicitly specify the topic from which you want to receive data. The script will subscribe to the provided topic and retrieve data on the default port 5555.
+
+```bash
+python modpoll/zeromq_recv.py --zeromq-topic modpoll/modsim001 --zeromq-port 9999
+```
+
+If needed, you can change the default port using the --zeromq-port option to match the port on which the data is published.
+
 ## Credits
 
 The implementation of this project is heavily inspired by the following two projects:
