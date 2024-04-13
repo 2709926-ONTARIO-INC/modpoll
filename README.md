@@ -341,7 +341,7 @@ modpoll \
 
 You can specify a different port number using the `--zeromq-port` option.
 
-> The ZeroMQ topic follows the <mqtt_topic_prefix>/<deviceid> pattern. <mqtt_topic_prefix> is provided by the `--zeromq-topic-prefix` argument, with the default value being modpoll/, and <deviceid> is provided by the Modbus configuration file.
+> The ZeroMQ topic follows the <zeromq_topic_prefix>/<deviceid> pattern. <zeromq_topic_prefix> is provided by the `--zeromq-topic-prefix` argument, with the default value being modpoll/, and <deviceid> is provided by the Modbus configuration file.
 
 ```bash
 modpoll \
